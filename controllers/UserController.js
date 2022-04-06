@@ -1,6 +1,6 @@
 const User = require('../models/User.js')
 const {registerValidation } = require('../validators/authRequests')
-const {hash} = require('../utils/hash')
+const {hashPassword, verifyPassword} = require('../utils/hash')
 
 module.exports = {
 	register: async (req, res) =>{
@@ -18,7 +18,7 @@ module.exports = {
 
 		
 		// hash password
-		password = await hash(password)
+		password = await hashPassword(password)
 
 		User.create({name, email, password, date}, (err,  user) =>{
 			if(err) return res.status(400).send(err)
@@ -26,12 +26,14 @@ module.exports = {
 		})
 	},
 
-	login: (req, res) =>{
+	login: async (req, res) =>{
 		const {email, password} =  req.body
-		const userExists = await User.findOne({email})
-		if(!userExists) return res.status(422).send({message: 'Email or password is wrong'})
+		const user = await User.findOne({email})
+		if(!user) return res.status(401).send({message: 'Email or password is wrong'})
 
 		// compare password
+		const validPassword = await verifyPassword(password, user.password)
+		if(!validPassword) return res.status(401).send({message: 'Email or passwordd is wrong'})
 
 
 	}
