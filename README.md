@@ -1,0 +1,1 @@
+# lnodejs-mongo-auth
